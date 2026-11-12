@@ -1,22 +1,20 @@
-use std::{cell::RefCell, rc::Rc};
+use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Node {
-	pub file_name: String,
-	pub file_path: String,
-	pub is_dir: bool,
+	pub children: HashMap<char, Node>,
+	pub is_terminal: bool,
 
-	pub parent: Option<Rc<RefCell<Node>>>,
-	pub children: Vec<Rc<RefCell<Node>>>
+	pub paths: Vec<String>
 }
 
 impl Default for Node {
 	fn default() -> Self {
 		Self {
-			file_name: String::new(),
-			file_path: String::new(),
-			is_dir: false,
-			parent: None,
-			children: Vec::new()
+			children: HashMap::new(),
+			is_terminal: false,
+
+			paths: Vec::new()
 		}
 	}
 }

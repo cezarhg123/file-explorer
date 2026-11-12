@@ -15,7 +15,17 @@ impl State {
 				}
 			},
 			State::FileExplorer(file_explorer) => {
+				file_explorer.ui(ui, frame);
 			},
 		}
 	}
+	
+		pub fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+			match self {
+				State::FileExplorer(file_explorer) => {
+					file_explorer.logic();
+				}
+				_ => {}
+			}
+		}
 }

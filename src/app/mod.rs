@@ -19,7 +19,7 @@ impl App {
 
 impl eframe::App for App {
 	fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-		
+		self.state.logic(ctx, frame);
 	}
 
 	fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
