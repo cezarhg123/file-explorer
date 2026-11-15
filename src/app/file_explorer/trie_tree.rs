@@ -18,7 +18,7 @@ impl TrieTree {
 		let threadpool = Arc::new(ThreadPool::new());
 
 		let threadpool_clone = Arc::clone(&threadpool);
-		threadpool.send_task(root_dir_path, trie_tree_sender, threadpool_clone);
+		threadpool.scan_dir(root_dir_path, trie_tree_sender, threadpool_clone);
 
 		Self {
 			root_keymap,
@@ -28,8 +28,16 @@ impl TrieTree {
 	}
 
 	pub fn update_trie_tree(&mut self) {
-		if let Ok(keymap) = self.trie_tree_receiver.try_recv() {
+		let start_time = Instant::now();
+		let mut iterations = 0;
+		while let Ok(keymap) = self.trie_tree_receiver.try_recv() {
 			insert_received_keymap(&mut self.root_keymap, keymap);
+			iterations += 1;
+
+			if start_time.elapsed().as_millis() >= 12 {
+				println!("{} iterations in 12ms", iterations);
+				break;
+			}
 		}
 	}
 
@@ -62,7 +70,7 @@ fn insert_received_keymap(root_keymap: &mut HashMap<char, Node>, received_keymap
 pub fn scan_dir(dir_path: String, sender: mpsc::Sender<HashMap<char, Node>>, threadpool: Arc<ThreadPool>) {
 	let mut keymap: HashMap<char, Node> = HashMap::new();
 
-	if let Ok(entries) = std::fs::read_dir(dir_path) {
+	if let Ok(entries) = std::fs::read_dir(&dir_path) {
 		for entry in entries {
 			if let Ok(dir_entry) = entry {
 				if let Ok(name) = dir_entry.file_name().into_string() {
@@ -80,6 +88,7 @@ pub fn scan_dir(dir_path: String, sender: mpsc::Sender<HashMap<char, Node>>, thr
 							keymap_entry.is_terminal = true;
 							keymap_entry.paths.push(dir_entry.path().into_string().unwrap());
 						}
+
 						
 						keymap_ref = &mut keymap_entry.children;
 					}
@@ -87,7 +96,7 @@ pub fn scan_dir(dir_path: String, sender: mpsc::Sender<HashMap<char, Node>>, thr
 					if dir_entry.file_type().unwrap().is_dir() {
 						let sender_clone = sender.clone();
 						let threadpool_clone = Arc::clone(&threadpool);
-						threadpool.send_task(dir_entry.path().into_string().unwrap(), sender_clone, threadpool_clone);
+						threadpool.scan_dir(dir_entry.path().into_string().unwrap(), sender_clone, threadpool_clone);
 					}
 				}
 			}

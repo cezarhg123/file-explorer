@@ -83,7 +83,7 @@ impl ThreadPool {
 		}
 	}
 
-	pub fn send_task(&self, dir_path: String, keymap_sender: mpsc::Sender<HashMap<char, Node>>, threadpool: Arc<ThreadPool>) {
+	pub fn scan_dir(&self, dir_path: String, keymap_sender: mpsc::Sender<HashMap<char, Node>>, threadpool: Arc<ThreadPool>) {
 		self.master_sender.send(Task::Task(dir_path, keymap_sender, threadpool)).unwrap();
 	}
 
