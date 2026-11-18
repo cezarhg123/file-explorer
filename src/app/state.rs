@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use eframe::egui;
 use crate::app::{file_explorer::FileExplorer, start_up_menu::StartUpMenu};
 
@@ -12,6 +14,7 @@ impl State {
 			State::StartUpMenu(start_up_menu) => {
 				if let Some(root_dir_path) = start_up_menu.ui(ui, frame) {
 					*self = State::FileExplorer(FileExplorer::new(root_dir_path));
+					ui.request_repaint_after(Duration::from_millis(10));
 				}
 			},
 			State::FileExplorer(file_explorer) => {
@@ -23,7 +26,7 @@ impl State {
 		pub fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 			match self {
 				State::FileExplorer(file_explorer) => {
-					file_explorer.logic();
+					file_explorer.logic(ctx);
 				}
 				_ => {}
 			}
