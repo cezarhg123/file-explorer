@@ -7,7 +7,7 @@ pub struct StartUpMenu {
 impl StartUpMenu {
 	pub fn new() -> Self {
 		Self {
-			root_dir_path: String::new()
+			root_dir_path: String::from("C:\\")
 		}
 	}
 

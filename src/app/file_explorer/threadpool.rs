@@ -1,6 +1,6 @@
 use std::{cell::Cell, sync::{Arc, atomic::{AtomicBool, AtomicU32}, mpsc}, thread};
 use std::collections::HashMap;
-use crate::app::file_explorer::{node::Node, trie_tree::scan_dir};
+use crate::app::file_explorer::{node::Node, trie_tree::{SearchFilters, scan_dir}};
 
 pub struct ThreadPool {
 	master_thread: thread::JoinHandle<()>,
@@ -15,7 +15,7 @@ pub enum Task {
 impl ThreadPool {
 	pub const MAX_THREADS: usize = 50;
 
-	pub fn new(tasks_sent: Arc<AtomicU32>) -> Self {
+	pub fn new() -> Self {
 		// master_sender is used to send tasks to the master thread which will then redirect them to an available worker
 		let (master_sender, master_receiver) = mpsc::channel();
 	
@@ -66,8 +66,6 @@ impl ThreadPool {
 								i %= Self::MAX_THREADS;
 							}
 						}
-
-						tasks_sent.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 					}
 					Task::Quit => {
 						for worker in worker_threads {

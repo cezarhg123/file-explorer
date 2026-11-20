@@ -5,7 +5,14 @@ pub struct Node {
 	pub children: HashMap<char, Node>,
 	pub is_terminal: bool,
 
-	pub paths: Vec<String>
+	pub files: Vec<FileInfo>
+}
+
+#[derive(Debug, Clone)]
+pub struct FileInfo {
+	pub name: String,
+	pub path: String,
+	pub is_dir: bool
 }
 
 impl Default for Node {
@@ -14,7 +21,7 @@ impl Default for Node {
 			children: HashMap::new(),
 			is_terminal: false,
 
-			paths: Vec::new()
+			files: Vec::new()
 		}
 	}
 }
