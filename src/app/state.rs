@@ -23,7 +23,7 @@ impl State {
 		}
 	}
 	
-		pub fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+		pub fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 			match self {
 				State::FileExplorer(file_explorer) => {
 					file_explorer.logic(ctx);

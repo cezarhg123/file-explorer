@@ -1,6 +1,4 @@
-use std::{collections::HashMap, io::Write, sync::{Arc, atomic::AtomicU32, mpsc}, time::Instant};
-use eframe::egui;
-
+use std::{collections::HashMap, sync::{Arc, mpsc}, time::Instant};
 use crate::app::file_explorer::{node::{FileInfo, Node}, threadpool::ThreadPool};
 
 pub struct TrieTree {
@@ -14,7 +12,8 @@ pub struct SearchFilters {
 	pub case_sensitive: bool,
 	pub show_dirs_only: bool,
 	pub show_files_only: bool,
-	pub max_files_found: u32
+	pub max_files_found: u32,
+	pub sort_alpha: bool,
 }
 
 impl Default for SearchFilters {
@@ -23,18 +22,17 @@ impl Default for SearchFilters {
 			case_sensitive: false,
 			show_dirs_only: false,
 			show_files_only: false,
-			max_files_found: 100
+			max_files_found: 100,
+			sort_alpha: true
 		}
 	}
 }
 
 impl TrieTree {
-	pub fn new(root_dir_path: String, search_filters: SearchFilters) -> Self {
-		let mut root_keymap = HashMap::new();
+	pub fn new(root_dir_path: String, threadpool: Arc<ThreadPool>) -> Self {
+		let root_keymap = HashMap::new();
 
 		let (trie_tree_sender, trie_tree_receiver) = mpsc::channel();
-
-		let threadpool = Arc::new(ThreadPool::new());
 
 		let threadpool_clone = Arc::clone(&threadpool);
 		threadpool.scan_dir(root_dir_path, trie_tree_sender, threadpool_clone);
@@ -109,8 +107,21 @@ impl TrieTree {
 			}
 		}
 
+		let mut folders = Vec::new();
+		let mut files = Vec::new();
+
+		for file_info in file_infos {
+			if file_info.is_dir {
+				folders.push(file_info);
+			} else {
+				files.push(file_info);
+			}
+		}
+
+		file_infos = folders;
+		file_infos.append(&mut files);
+
 		if search_filters.case_sensitive {
-			println!("case sensitive");
 			for i in (0..file_infos.len()).rev() { // go backwards so that when file_info is removed, i doesn't have to be decremented
 				let file_info = &file_infos[i];
 				let name_chars = file_info.name.chars().collect::<Vec<char>>();
@@ -144,6 +155,28 @@ impl TrieTree {
 				}
 			}
 		}
+
+		let file_info_names = file_infos.iter().map(|file_info| {
+			file_info.name.clone()
+		}).collect::<Vec<String>>();
+
+		let mut sorted_file_infos = Vec::new();
+
+		// file list will ALWAYS be sorted, whether normally or in reverse order
+		// either way i have to sort it first
+		for file_info_name in file_info_names {
+			for file_info in &file_infos {
+				if file_info.name == file_info_name {
+					sorted_file_infos.push(file_info.clone());
+				}
+			}
+		}
+
+		if !search_filters.sort_alpha {
+			sorted_file_infos = sorted_file_infos.into_iter().rev().collect();
+		}
+
+		file_infos = sorted_file_infos;
 
 		file_infos
 	}

@@ -18,7 +18,7 @@ impl StartUpMenu {
 		}
 	}
 
-	pub fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) -> Option<String> {
+	pub fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) -> Option<String> {
 		egui::Area::new(self.center_ui_id)
 			.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
 			.show(

@@ -13,6 +13,7 @@ fn main() {
 		"File Explorer",
 		options,
 		Box::new(|cc| {
+			egui_extras::install_image_loaders(&cc.egui_ctx);
 			Ok(Box::new(App::new()))
 		})
 	).unwrap();
